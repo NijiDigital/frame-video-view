@@ -10,8 +10,6 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public @TargetApi(14)
 class TextureViewImpl extends TextureView implements
@@ -28,7 +26,6 @@ class TextureViewImpl extends TextureView implements
     private MediaPlayer mediaPlayer;
     private boolean prepared;
     private boolean startInPrepare;
-    private static final Logger LOG = LoggerFactory.getLogger(TextureViewImpl.class.getSimpleName());
 
     public TextureViewImpl(Context context) {
         super(context);
@@ -54,7 +51,6 @@ class TextureViewImpl extends TextureView implements
 
     @Override
     public void onPrepared(MediaPlayer mp) {
-        LOG.trace("onPrepared isPlaying={}", mp.isPlaying());
         mp.setLooping(true);
         if(startInPrepare){
             mp.start();
@@ -68,7 +64,6 @@ class TextureViewImpl extends TextureView implements
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        LOG.trace("onSurfaceTextureAvailable");
         this.surface = new Surface(surface);
         if(!prepared && videoUri != null){
             prepare();
@@ -99,7 +94,6 @@ class TextureViewImpl extends TextureView implements
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-        LOG.trace("onSurfaceTextureDestroyed");
         removeVideo();
         return false;
     }
@@ -111,13 +105,11 @@ class TextureViewImpl extends TextureView implements
 
     @Override
     public void onBufferingUpdate(MediaPlayer mp, int percent) {
-        LOG.trace("onBufferingUpdate percent {}", percent);
     }
 
     @Override
     public void onResume() {
         if(prepared) {
-            LOG.trace("start video");
             mediaPlayer.start();
         } else{
             startInPrepare = true;
