@@ -11,7 +11,8 @@ import android.view.TextureView;
 import android.view.View;
 
 
-public @TargetApi(14)
+public
+@TargetApi(14)
 class TextureViewImpl extends TextureView implements
         Impl,
         MediaPlayer.OnPreparedListener,
@@ -41,10 +42,10 @@ class TextureViewImpl extends TextureView implements
     public void init(View placeholderView, Uri videoUri) {
         this.placeholderView = placeholderView;
         this.videoUri = videoUri;
-        if(prepared){
+        if (prepared) {
             release();
         }
-        if(surface != null) {
+        if (surface != null) {
             prepare();
         }
     }
@@ -52,12 +53,12 @@ class TextureViewImpl extends TextureView implements
     @Override
     public void onPrepared(MediaPlayer mp) {
         mp.setLooping(true);
-        if(startInPrepare){
+        if (startInPrepare) {
             mp.start();
             startInPrepare = false;
         }
         prepared = true;
-        if(listener != null){
+        if (listener != null) {
             listener.mediaPlayerPrepared(mp);
         }
     }
@@ -65,7 +66,7 @@ class TextureViewImpl extends TextureView implements
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
         this.surface = new Surface(surface);
-        if(!prepared && videoUri != null){
+        if (!prepared && videoUri != null) {
             prepare();
         }
     }
@@ -80,8 +81,8 @@ class TextureViewImpl extends TextureView implements
             mediaPlayer.setOnBufferingUpdateListener(this);
             mediaPlayer.prepare();
         } catch (Exception e) {
-            if ( listener != null ) {
-                listener.mediaPlayerPrepareFailed( mediaPlayer, e.toString() );
+            if (listener != null) {
+                listener.mediaPlayerPrepareFailed(mediaPlayer, e.toString());
             }
             removeVideo();
         }
@@ -109,13 +110,13 @@ class TextureViewImpl extends TextureView implements
 
     @Override
     public void onResume() {
-        if(prepared) {
+        if (prepared) {
             mediaPlayer.start();
-        } else{
+        } else {
             startInPrepare = true;
         }
 
-        if(isAvailable()){
+        if (isAvailable()) {
             onSurfaceTextureAvailable(getSurfaceTexture(), 0, 0);
         }
     }
@@ -126,7 +127,7 @@ class TextureViewImpl extends TextureView implements
     }
 
     private void release() {
-        if(mediaPlayer != null) {
+        if (mediaPlayer != null) {
             mediaPlayer.stop();
             mediaPlayer.release();
         }
@@ -135,7 +136,7 @@ class TextureViewImpl extends TextureView implements
         startInPrepare = false;
     }
 
-    private void removeVideo(){
+    private void removeVideo() {
         placeholderView.setVisibility(View.VISIBLE);
         release();
     }

@@ -3,6 +3,7 @@ package com.mklimek.frameviedoview;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -10,34 +11,38 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.Toast;
 
 public class FrameVideoView extends FrameLayout {
 
     private Impl impl;
     private ImplType implType;
     private View placeholderView;
-    private Uri videoUri;
-    private Context context;
-
 
     public FrameVideoView(Context context) {
-        super(context);
-        this.context = context;
+        this(context, null);
+    }
+
+    public FrameVideoView(Context context, AttributeSet attrs) {
+        this(context, attrs, 0);
+    }
+
+    public FrameVideoView(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
         placeholderView = createPlaceholderView(context);
         impl = getImplInstance(context);
         addView(placeholderView);
     }
 
-    public FrameVideoView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        this.context = context;
-        placeholderView = createPlaceholderView(context);
-        impl = getImplInstance(context, attrs);
-        addView(placeholderView);
+    @SuppressLint("NewApi")
+    public void setDefaultPlaceholder(Drawable placeholderDrawable) {
+        if (Build.VERSION.SDK_INT < 16) {
+            placeholderView.setBackgroundDrawable(placeholderDrawable);
+        } else {
+            placeholderView.setBackground(placeholderDrawable);
+        }
     }
 
-    private Impl getImplInstance(Context context) {
+    private Impl getImplInstance(final Context context) {
         if (Build.VERSION.SDK_INT >= 14) {
             implType = ImplType.TEXTURE_VIEW;
             final TextureViewImpl textureVideoImpl = new TextureViewImpl(context);
@@ -51,34 +56,18 @@ public class FrameVideoView extends FrameLayout {
         }
     }
 
-    private Impl getImplInstance(Context context, AttributeSet attrs) {
-        if (Build.VERSION.SDK_INT >= 14) {
-            implType = ImplType.TEXTURE_VIEW;
-            final TextureViewImpl textureVideoImpl = new TextureViewImpl(context, attrs);
-            addView(textureVideoImpl);
-            return textureVideoImpl;
+    public void setup(final Uri videoUri) {
+        final ColorDrawable colorDrawable;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            colorDrawable = new ColorDrawable(getResources().getColor(android.R.color.white, getContext().getTheme()));
         } else {
-            implType = ImplType.VIDEO_VIEW;
-            final VideoViewImpl videoViewImpl = new VideoViewImpl(context, attrs);
-            addView(videoViewImpl);
-            return videoViewImpl;
+            colorDrawable = new ColorDrawable(getResources().getColor(android.R.color.white));
         }
-    }
-
-    public void setup(Uri videoUri) {
-        this.videoUri = videoUri;
-        impl.init(placeholderView, videoUri);
-    }
-
-    public void setup(Uri videoUri, int placeholderBackgroundColor) {
-        this.videoUri = videoUri;
-        placeholderView.setBackgroundColor(placeholderBackgroundColor);
-        impl.init(placeholderView, videoUri);
+        setup(videoUri, colorDrawable);
     }
 
     @SuppressLint("NewApi")
-    public void setup(Uri videoUri, Drawable placeholderDrawable) {
-        this.videoUri = videoUri;
+    public void setup(final Uri videoUri, final Drawable placeholderDrawable) {
         if (Build.VERSION.SDK_INT < 16) {
             placeholderView.setBackgroundDrawable(placeholderDrawable);
         } else {
@@ -113,31 +102,6 @@ public class FrameVideoView extends FrameLayout {
 
     public void setFrameVideoViewListener(FrameVideoViewListener listener) {
         impl.setFrameVideoViewListener(listener);
-    }
-
-    public void setImpl(ImplType implType) {
-        removeAllViews();
-        if (implType == ImplType.TEXTURE_VIEW && Build.VERSION.SDK_INT < 14) {
-            implType = ImplType.VIDEO_VIEW;
-            Toast.makeText(context, "Cannot use TEXTURE_VIEW impl because your device running API level 13 or lower", Toast.LENGTH_LONG).show();
-        }
-        this.implType = implType;
-        switch (implType) {
-            case TEXTURE_VIEW:
-                final TextureViewImpl textureViewImpl = new TextureViewImpl(context);
-                textureViewImpl.init(placeholderView, videoUri);
-                addView(textureViewImpl);
-                impl = textureViewImpl;
-                break;
-            case VIDEO_VIEW:
-                VideoViewImpl videoViewImpl = new VideoViewImpl(context);
-                videoViewImpl.init(placeholderView, videoUri);
-                addView(videoViewImpl);
-                impl = videoViewImpl;
-                break;
-        }
-        addView(placeholderView);
-        onResume();
     }
 
 }
