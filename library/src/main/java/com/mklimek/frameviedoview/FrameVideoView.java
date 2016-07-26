@@ -3,8 +3,6 @@ package com.mklimek.frameviedoview;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.util.AttributeSet;
@@ -15,7 +13,6 @@ import android.widget.FrameLayout;
 public class FrameVideoView extends FrameLayout {
 
     private Impl impl;
-    private ImplType implType;
     private View placeholderView;
 
     public FrameVideoView(Context context) {
@@ -33,47 +30,31 @@ public class FrameVideoView extends FrameLayout {
         addView(placeholderView);
     }
 
-    @SuppressLint("NewApi")
-    public void setDefaultPlaceholder(Drawable placeholderDrawable) {
-        if (Build.VERSION.SDK_INT < 16) {
-            placeholderView.setBackgroundDrawable(placeholderDrawable);
-        } else {
-            placeholderView.setBackground(placeholderDrawable);
-        }
-    }
-
     private Impl getImplInstance(final Context context) {
         if (Build.VERSION.SDK_INT >= 14) {
-            implType = ImplType.TEXTURE_VIEW;
             final TextureViewImpl textureVideoImpl = new TextureViewImpl(context);
             addView(textureVideoImpl);
             return textureVideoImpl;
         } else {
-            implType = ImplType.VIDEO_VIEW;
             final VideoViewImpl videoViewImpl = new VideoViewImpl(context);
             addView(videoViewImpl);
             return videoViewImpl;
         }
     }
 
-    public void setup(final Uri videoUri) {
-        final ColorDrawable colorDrawable;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            colorDrawable = new ColorDrawable(getResources().getColor(android.R.color.white, getContext().getTheme()));
-        } else {
-            colorDrawable = new ColorDrawable(getResources().getColor(android.R.color.white));
-        }
-        setup(videoUri, colorDrawable);
+    public void setup(final int backgroundRes) {
+        setup(null, backgroundRes);
     }
 
     @SuppressLint("NewApi")
-    public void setup(final Uri videoUri, final Drawable placeholderDrawable) {
-        if (Build.VERSION.SDK_INT < 16) {
-            placeholderView.setBackgroundDrawable(placeholderDrawable);
+    public void setup(final Uri videoUri, final int backgroundRes) {
+        placeholderView.setBackgroundResource(backgroundRes);
+        if (videoUri == null) {
+            impl.onPause();
+            placeholderView.setVisibility(VISIBLE);
         } else {
-            placeholderView.setBackground(placeholderDrawable);
+            impl.init(placeholderView, videoUri);
         }
-        impl.init(placeholderView, videoUri);
     }
 
     private View createPlaceholderView(Context context) {
@@ -90,10 +71,6 @@ public class FrameVideoView extends FrameLayout {
 
     public void onPause() {
         impl.onPause();
-    }
-
-    public ImplType getImplType() {
-        return implType;
     }
 
     public View getPlaceholderView() {

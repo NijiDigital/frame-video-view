@@ -41,7 +41,9 @@ public class VideoViewImpl extends VideoView implements Impl, MediaPlayer.OnPrep
 
     @Override
     public void onPause() {
-        placeholderView.setVisibility(View.VISIBLE);
+        if (placeholderView != null) {
+            placeholderView.setVisibility(View.VISIBLE);
+        }
         stopPlayback();
     }
 
@@ -55,8 +57,8 @@ public class VideoViewImpl extends VideoView implements Impl, MediaPlayer.OnPrep
     public void onPrepared(MediaPlayer mediaPlayer) {
         mediaPlayer.setLooping(true);
         mediaPlayer.setOnInfoListener(new InfoListener(placeholderView));
-        if(listener != null){
-           listener.mediaPlayerPrepared(mediaPlayer);
+        if (listener != null) {
+            listener.mediaPlayerPrepared(mediaPlayer);
         }
     }
 }

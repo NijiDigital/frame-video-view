@@ -130,14 +130,16 @@ class TextureViewImpl extends TextureView implements
         if (mediaPlayer != null) {
             mediaPlayer.stop();
             mediaPlayer.release();
+            mediaPlayer = null;
         }
-        mediaPlayer = null;
         prepared = false;
         startInPrepare = false;
     }
 
     private void removeVideo() {
-        placeholderView.setVisibility(View.VISIBLE);
+        if (placeholderView != null) {
+            placeholderView.setVisibility(View.VISIBLE);
+        }
         release();
     }
 
